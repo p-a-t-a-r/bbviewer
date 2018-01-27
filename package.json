@@ -1,0 +1,30 @@
+{
+    "name": "bbviewer",
+    "version": "1.0.0",
+    "description": "A full-screen image viewer for multiple boorus that puts the art front and center.",
+    "main": "./src/bbviewer.js",
+    "author": "p-a-t-a-r",
+    "license": "MIT",
+    "scripts": {
+        "build": "yarn run build-chrome && yarn run build-firefox",
+        "build-chrome": "TARGET=chrome $(yarn bin)/webpack",
+        "build-firefox": "TARGET=firefox $(yarn bin)/webpack",
+        "pack": "yarn run clean && yarn run build && yarn run pack-chrome && yarn run pack-firefox",
+        "pack-chrome": "cd obj/chrome && zip -r ../bin/release/bbviewer-chrome.zip .",
+        "pack-firefox": "$(yarn bin)/web-ext build -c web-ext.config.js",
+        "debug-firefox": "$(yarn bin)/web-ext run -c web-ext.config.js --bc",
+        "eslint": "$(yarn bin)/eslint .",
+        "clean": "rm -rf ./obj/* && rm -rf ./bin/*",
+        "ls": "ls"
+    },
+    "dependencies": {
+        "urijs": "^1.19.0",
+        "webextension-polyfill": "^0.2.1"
+    },
+    "devDependencies": {
+        "copy-webpack-plugin": "^4.3.1",
+        "eslint": "^4.16.0",
+        "web-ext": "^2.3.2",
+        "webpack": "^3.10.0"
+    }
+}
