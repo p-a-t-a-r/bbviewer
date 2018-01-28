@@ -1,0 +1,291 @@
+
+// Set up the viewer with the provided search string and starting ID
+function openViewer(search, id)
+{
+    // Load the viewer HTML and CSS into the DOM
+    document.getElementsByTagName("body")[0].innerHTML = viewerHTML;
+    document.getElementsByTagName("head")[0].innerHTML += '<style type="text/css">' + viewerCSS + '</style>';
+
+    // Load site-specific HTML and CSS into the DOM
+    bbviewer.site.loadSiteHtml();
+
+    // Event handler for keyboard shortcuts
+    document.addEventListener("keydown", handleKeypress);
+
+    // Event handler for popstates to enable the back and forward buttons with full AJAX
+    window.onpopstate = handlePopstate;
+
+    // Event handlers for the previous, next, and random image buttons
+    document.getElementById("bbviewer-previous").addEventListener("click", wrapCallback(previousImage), false);
+    document.getElementById("bbviewer-next").addEventListener("click", wrapCallback(nextImage), false);
+    document.getElementById("bbviewer-random").addEventListener("click", wrapCallback(randomImage), false);
+
+    // Event handlers for the upvote, downvote, and favorite buttons
+    // document.getElementById("btnupvote").addEventListener("click", upvoteImage, false);
+    // document.getElementById("btndownvote").addEventListener("click", downvoteImage, false);
+    // document.getElementById("btnfave").addEventListener("click", favoriteImage, false);
+
+    // Event handlers for the auto-advance start/stop button
+    // document.getElementById("btnstartaa").addEventListener("click", startAA, false);
+    // document.getElementById("btnstopaa").addEventListener("click", stopAA, false);
+
+    // Event handlers for the auto-advance settings tray
+    // document.getElementById("btnshowaatray").addEventListener("click", showAATray, false);
+    // document.getElementById("btnhideaatray").addEventListener("click", hideAATray, false);
+    
+    // Event handlers for the auto-advance delay buttons
+    // document.getElementById("btndecreaseaa10").addEventListener("click", decreaseAADelay10, false);
+    // document.getElementById("btndecreaseaa1").addEventListener("click", decreaseAADelay1, false);
+    // document.getElementById("btnincreaseaa1").addEventListener("click", increaseAADelay1, false);
+    // document.getElementById("btnincreaseaa10").addEventListener("click", increaseAADelay10, false);
+    
+    // Event handlers for the auto-advance mode buttons
+    // document.getElementById("btnsetaaprev").addEventListener("click", setAAPrev, false);
+    // document.getElementById("btnsetaarand").addEventListener("click", setAARand, false);
+    // document.getElementById("btnsetaanext").addEventListener("click", setAANext, false);
+    
+    // Event handlers for the show/hide toolbar button
+    // document.getElementById("btnshowtoolbar").addEventListener("click", showToolbar, false);
+    // document.getElementById("btnhidetoolbar").addEventListener("click", hideToolbar, false);
+
+    // Check if we have fullscreen capability
+    // if (
+    //     document.fullscreenEnabled
+    //      || document.mozFullScreenEnabled
+    //      || document.webkitFullccreenEnabled
+    //      || document.msFullscreenEnabled
+    // ) {
+    //     // Show the fullscreen button to the user
+    //     document.getElementById("btnfullscreen").className = "";
+        
+    //     // Add event handlers to the fullscreen buttons
+    //     document.getElementById("btnstartfullscreen").addEventListener("click", startFullscreen, false);
+    //     document.getElementById("btnendfullscreen").addEventListener("click", endFullscreen, false);
+        
+    //     // Add an event listener to update the fullscreen button when our fullscreen state changes
+    //     document.addEventListener("fullscreenchange", fullscreenChanged);
+    //     document.addEventListener("mozfullscreenchange", fullscreenChanged);
+    //     document.addEventListener("webkitfullscreenchange", fullscreenChanged);
+    //     document.addEventListener("msfullscreenchange", fullscreenChanged);
+    // }
+
+    // Save the search string
+    bbviewer.search = search;
+
+    // Create and fetch the initial image
+    bbviewer.current = new BBViewerImage(null, null);
+    bbviewer.current.fetchID(id);
+
+    // Prefetch the next image
+    bbviewer.current.fetchNext();
+
+    // Perform the initial UI update
+    updateUI();
+}
+
+// Set the UI state based on slideshow.current
+function updateUI()
+{
+    // If the current image is errored, set the UI to error state
+    if (bbviewer.current.error)
+    {
+        // Set the indicators
+        document.getElementById("bbviewer-loading").className = "bbviewer-hidden";
+        document.getElementById("bbviewer-error").className = "";
+
+        // Clear the UI
+        clearUI();
+
+        // Reset loadedid
+        bbviewer.loadedid = 0;
+    }
+    // If the current image is not fetched, set the UI to Loading state
+    else if (!bbviewer.current.fetched)
+    {
+        // Set the indicators
+        document.getElementById("bbviewer-loading").className = "";
+        document.getElementById("bbviewer-error").className = "bbviewer-hidden";
+
+        // Clear the UI
+        clearUI();
+
+        // Reset loadedid
+        bbviewer.loadedid = 0;
+    }
+    // If the current image is fetched but not loaded, load it
+    else if (bbviewer.current.fetched && bbviewer.loadedid !== bbviewer.current.id)
+    {
+        // Clear the indicators
+        document.getElementById("bbviewer-loading").className = "bbviewer-hidden";
+        document.getElementById("bbviewer-error").className = "bbviewer-hidden";
+
+        // Clear the UI
+        clearUI();
+
+        // Set the loadedid
+        bbviewer.loadedid = bbviewer.current.id;
+
+        // Load the image
+        loadCurrentImage();
+    }
+}
+
+// Clear the UI
+function clearUI()
+{
+    document.getElementById("bbviewer-small").src = "";
+    document.getElementById("bbviewer-full").src = "";
+    
+    document.getElementById("bbviewer-score").innerHTML = "-";
+    document.getElementById("bbviewer-faves").innerHTML = "-";
+}
+
+// Loads the image in bbviewer.current into the UI
+function loadCurrentImage()
+{
+    // Set the image sources
+    document.getElementById("bbviewer-small").src = bbviewer.current.url_small;
+    document.getElementById("bbviewer-full").src = bbviewer.current.url_full;
+
+    // Set the score and fav count
+    document.getElementById("bbviewer-score").innerHTML = bbviewer.current.score;
+    document.getElementById("bbviewer-faves").innerHTML = bbviewer.current.faves;
+
+    // Set the page title
+    document.title = bbviewer.site.getPageTitle();
+    
+    // Push a history state for the image if necessary
+    if (bbviewer.current.pushstate)
+    {
+        history.pushState(
+            { bbviewerid: bbviewer.current.id },
+            null,
+            location.origin + "/bbviewer/" + bbviewer.search + "/" + bbviewer.current.id
+        );
+        
+        bbviewer.current.pushstate = false;
+    }
+}
+
+// ==/Core Javascript==
+
+// ==Event Handlers==
+
+// Handles keypress events and fires off the appropriate action
+function handleKeypress(event)
+{
+    switch(event.which)
+    {
+        case 74: // j
+            previousImage();
+            break;
+        
+        case 75: // k
+            nextImage();
+            break;
+        
+        case 82: // r
+            randomImage();
+            break;
+        
+        case 85: // u
+            //upvoteImage();
+            break;
+        
+        case 70: // f
+            //favoriteImage();
+            break;
+    }
+}
+
+// Handle popstate events, loading the appropriate image
+function handlePopstate(event)
+{
+    // Make sure we have a valid state
+    if (typeof(event.state.bbviewerid) == "undefined")
+    {
+        // If this isn't one of our pages, just refresh
+        location.reload();
+    }
+    
+    // Create and fetch the image
+    bbviewer.current = new BBViewerImage(null, null);
+    bbviewer.current.fetchID(event.state.bbviewerid);
+    
+    // Make sure we don't repush the state for the image
+    bbviewer.current.pushstate = false;
+
+    // Trigger a UI update
+    updateUI();
+}
+
+// Load the previous image
+function previousImage()
+{
+    // Fetch the previous image
+    bbviewer.current.fetchPrevious();
+
+    // Make sure we got a previous image
+    if (bbviewer.current.previous === null) return;
+
+    // Switch to the previous image
+    bbviewer.current = bbviewer.current.previous;
+
+    // Prefetch the new previous image
+    bbviewer.current.fetchPrevious();
+  
+    // Make sure a new state gets pushed for the image
+    bbviewer.current.pushstate = true;
+
+    // Trigger a UI update
+    updateUI();
+}
+
+// Load the next image
+function nextImage()
+{
+    // Fetch the next image
+    bbviewer.current.fetchNext();
+
+    // Make sure there is a next image
+    if (bbviewer.current.next === null) return;
+
+    // Switch to the next image
+    bbviewer.current = bbviewer.current.next;
+
+    // Prefetch the new next image
+    bbviewer.current.fetchNext();
+  
+    // Make sure a new state gets pushed for the image
+    bbviewer.current.pushstate = true;
+
+    // Trigger a UI update
+    updateUI();
+}
+
+// Load a random image
+function randomImage()
+{
+    // Fetch the random image
+    bbviewer.current.fetchRandom();
+
+    // Make sure there is a random image
+    if (bbviewer.current.random === null) return;
+
+    // Switch to the random image
+    bbviewer.current = bbviewer.current.random;
+
+    // Prefetch the new random image
+    bbviewer.current.fetchRandom();
+  
+    // Make sure a new state gets pushed for the image
+    bbviewer.current.pushstate = true;
+
+    // Trigger a UI update
+    updateUI();
+}
+
+// ==/Event Handlers==
+
+// The javascript has all been read, let's get this party started!
+initialize();

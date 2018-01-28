@@ -6,16 +6,16 @@
     "author": "p-a-t-a-r",
     "license": "MIT",
     "scripts": {
-        "build": "yarn run build-chrome && yarn run build-firefox",
-        "build-chrome": "TARGET=chrome $(yarn bin)/webpack",
-        "build-firefox": "TARGET=firefox $(yarn bin)/webpack",
-        "pack": "yarn run clean && yarn run build && yarn run pack-chrome && yarn run pack-firefox",
-        "pack-chrome": "cd obj/chrome && zip -r ../bin/release/bbviewer-chrome.zip .",
-        "pack-firefox": "$(yarn bin)/web-ext build -c web-ext.config.js",
-        "debug-firefox": "$(yarn bin)/web-ext run -c web-ext.config.js --bc",
-        "eslint": "$(yarn bin)/eslint .",
-        "clean": "rm -rf ./obj/* && rm -rf ./bin/*",
-        "ls": "ls"
+        "clean": "rm -rf ./build/* && rm -rf ./release/* && rm -rf ./debug/*",
+        "build-all": "yarn run build-chrome && yarn run build-firefox",
+        "build-chrome": "$(yarn bin)/webpack --config config/webpack.config.chrome.js",
+        "build-firefox": "$(yarn bin)/webpack --config config/webpack.config.firefox.js",
+        "build-chrome-debug": "$(yarn bin)/webpack --config config/webpack.config.chrome.debug.js",
+        "build-firefox-debug": "$(yarn bin)/webpack --config config/webpack.config.firefox.debug.js",
+        "pack-chrome": "cd build/chrome && zip -r ../../release/bbviewer-chrome.zip .",
+        "pack-firefox": "$(yarn bin)/web-ext build -c config/web-ext.config.js",
+        "debug-firefox": "$(yarn bin)/web-ext run -c config/web-ext.config.debug.js",
+        "release": "yarn run clean && yarn run build-all && yarn run pack-chrome && yarn run pack-firefox"
     },
     "dependencies": {
         "urijs": "^1.19.0",
@@ -24,6 +24,7 @@
     "devDependencies": {
         "copy-webpack-plugin": "^4.3.1",
         "eslint": "^4.16.0",
+        "uglifyjs-webpack-plugin": "^1.1.6",
         "web-ext": "^2.3.2",
         "webpack": "^3.10.0"
     }
