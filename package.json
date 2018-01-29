@@ -2,7 +2,7 @@
     "name": "bbviewer",
     "version": "1.0.0",
     "description": "A full-screen image viewer for multiple boorus that puts the art front and center.",
-    "main": "./src/bbviewer.js",
+    "main": "./src/app/App.ts",
     "author": "p-a-t-a-r",
     "license": "MIT",
     "scripts": {
@@ -18,12 +18,17 @@
         "release": "yarn run clean && yarn run build-all && yarn run pack-chrome && yarn run pack-firefox"
     },
     "dependencies": {
+        "jquery": "^3.3.1",
+        "ts-loader": "^3.3.1",
         "urijs": "^1.19.0",
         "webextension-polyfill": "^0.2.1"
     },
     "devDependencies": {
+        "@types/jquery": "^3.3.0",
+        "@types/urijs": "^1.15.34",
         "copy-webpack-plugin": "^4.3.1",
-        "eslint": "^4.16.0",
+        "source-map-loader": "^0.2.3",
+        "typescript": "^2.6.2",
         "uglifyjs-webpack-plugin": "^1.1.6",
         "web-ext": "^2.3.2",
         "webpack": "^3.10.0"

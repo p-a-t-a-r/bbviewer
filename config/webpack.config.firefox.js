@@ -27,6 +27,25 @@ module.exports =
     {
         // Allow us to import node modules
         modules: [path.resolve(__dirname, "../node_modules")],
+        
+        // Allow us to load typescript files
+        extensions: [ '.tsx', '.ts', '.js' ]
+    },
+    
+    // Enable the Typescript loader
+    module: {
+        rules: [
+            {
+                test: /\.tsx?$/,
+                use: 'ts-loader',
+                exclude: /node_modules/
+            },
+            {
+                enforce: "pre",
+                test: /\.js$/,
+                loader: "source-map-loader"
+            }
+        ]
     },
 
     plugins:
@@ -42,15 +61,13 @@ module.exports =
 
             // Copy the icons
             {
-                from: { glob:"../images/icon-*.png" },
-                to: "./images",
+                from: { glob:"./images/icon-*.png" },
+                to: ".",
             },
 
             // Copy static files
-            {
-                from: "./static",
-                to: "./",
-            },
+            { from: "./bbviewer.firefox.html", to: "./bbviewer.html" },
+            { from: "./bbviewer.css", to: "./bbviewer.css" },
         ]),
 
         // Uglify it

@@ -1,44 +1,57 @@
 /**
- * bbviewer.js - Core logic for BigBooruViewer.
- * 
- * Contains logic for initializing the viewer and managing image objects.
+ * bbviewer.js - Entry point for the BigBooruViewer web app.
  */
 
-// Global container for viewer data
-let bbviewer = {
-    // The current site interface, encapsulates all site-specific logic
-    "site": null,
+import { getSiteInterfaceStatic } from "./app/SiteInterface";
+import App from "./app/App";
 
-    // The current image object
-    "current": null,
-
-    // The ID of the image currently loaded into the UI, used to prevent double loads
-    "loadedid": 0,
-
-    // The current search string
-    "search": "",
-
-    // The current slideshow delay, in seconds
-    "slideshowdelay": 10,
-
-    // The current sideshow direction, can be "previous", "next", or "random"
-    "slideshowdirection": "next"
-};
-
-// Lambda our global code so we can use await
+// Wrap our global code so we can use await and return
 (async () => {
 
     // Get the current tab object
     let tab = await browser.tabs.getCurrent();
     
     // Make sure we have a valid openerTabId
-    if (typeof(tab.openerTabId) !== "undefined")
+    if (typeof(tab.openerTabId) === "undefined")
     {
-        // Get our opener tab
-        let opener = await browser.tabs.get(tab.openerTabId);
-
-        console.log(opener.url);
+        fatalError();
+        return;
     }
+
+    // Get our opener tab
+    let opener = await browser.tabs.get(tab.openerTabId);
+
+    // Get a SiteInterface type based on our opener's URL
+    let siteInterfaceType = getSiteInterfaceStatic(opener.url);
+
+    // Make sure we actually got a SiteInterface type
+    if (siteInterfaceType === null)
+    {
+        fatalError();
+        return;
+    }
+
+    // Make sure the URL is valid
+    if (!siteInterfaceType.checkUrl(opener.url))
+    {
+        fatalError();
+        return;
+    }
+
+    // Construct the SiteInterface
+    let siteInterface = new siteInterfaceType(opener.url);
+
+    // Construct the application
+    let bbviewer = new App(siteInterface);
+
+    // LAUNCH
+    bbviewer.launch();
 
 // End of the async lambda
 })();
+
+// Show an error message to the user then commit seppuku
+function fatalError()
+{
+    alert("A fatal error occurred. Please close the tab and try again later.");
+}

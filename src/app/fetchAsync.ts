@@ -1,5 +1,5 @@
 /**
- * util.js - A collection of utility functions used by BigBooruViewer.
+ * app/fetchAsync.ts - An async/await compatible XHR wrapper.
  */
 
 /**
@@ -8,10 +8,9 @@
  * Returns a promise which resolves on the response body for a 200,
  * the status message on a 204, and rejects on the status message for anything else.
  * 
- * @param {string} url The URL to send the request to
- * @return {Promise}
+ * @param url The URL to send the request to.
  */
-export function promiseHttp(url)
+export default function fetchAsync(url: string) : Promise<string>
 {
     return new Promise(function(resolve, reject)
     {
@@ -21,11 +20,11 @@ export function promiseHttp(url)
         
         XHR.onload = function()
         {         
-            if (XHR.status == "200")
+            if (XHR.status == 200)
             {
                 resolve(XHR.responseText);
             }
-            else if (XHR.status == "204")
+            else if (XHR.status == 204)
             {
                 resolve(XHR.statusText);
             }
@@ -47,22 +46,4 @@ export function promiseHttp(url)
         
         XHR.send();
     })
-}
-
-/**
- * A wrapper for DOM event callbacks.
- * 
- * Calls event.preventDefault then calls the callback with no parameters.
- * 
- * @param {function} callback A callback function with no parameters.
- * @return {function} A callback function to use as a DOM event handler.
- */
-function wrapCallback(callback)
-{
-    return function(event)
-    {
-        event.preventDefault();
-      
-      	callback();
-    }
 }

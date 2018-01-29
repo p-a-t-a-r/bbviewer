@@ -2,18 +2,7 @@
 // Set up the viewer with the provided search string and starting ID
 function openViewer(search, id)
 {
-    // Load the viewer HTML and CSS into the DOM
-    document.getElementsByTagName("body")[0].innerHTML = viewerHTML;
-    document.getElementsByTagName("head")[0].innerHTML += '<style type="text/css">' + viewerCSS + '</style>';
 
-    // Load site-specific HTML and CSS into the DOM
-    bbviewer.site.loadSiteHtml();
-
-    // Event handler for keyboard shortcuts
-    document.addEventListener("keydown", handleKeypress);
-
-    // Event handler for popstates to enable the back and forward buttons with full AJAX
-    window.onpopstate = handlePopstate;
 
     // Event handlers for the previous, next, and random image buttons
     document.getElementById("bbviewer-previous").addEventListener("click", wrapCallback(previousImage), false);
@@ -165,124 +154,6 @@ function loadCurrentImage()
         
         bbviewer.current.pushstate = false;
     }
-}
-
-// ==/Core Javascript==
-
-// ==Event Handlers==
-
-// Handles keypress events and fires off the appropriate action
-function handleKeypress(event)
-{
-    switch(event.which)
-    {
-        case 74: // j
-            previousImage();
-            break;
-        
-        case 75: // k
-            nextImage();
-            break;
-        
-        case 82: // r
-            randomImage();
-            break;
-        
-        case 85: // u
-            //upvoteImage();
-            break;
-        
-        case 70: // f
-            //favoriteImage();
-            break;
-    }
-}
-
-// Handle popstate events, loading the appropriate image
-function handlePopstate(event)
-{
-    // Make sure we have a valid state
-    if (typeof(event.state.bbviewerid) == "undefined")
-    {
-        // If this isn't one of our pages, just refresh
-        location.reload();
-    }
-    
-    // Create and fetch the image
-    bbviewer.current = new BBViewerImage(null, null);
-    bbviewer.current.fetchID(event.state.bbviewerid);
-    
-    // Make sure we don't repush the state for the image
-    bbviewer.current.pushstate = false;
-
-    // Trigger a UI update
-    updateUI();
-}
-
-// Load the previous image
-function previousImage()
-{
-    // Fetch the previous image
-    bbviewer.current.fetchPrevious();
-
-    // Make sure we got a previous image
-    if (bbviewer.current.previous === null) return;
-
-    // Switch to the previous image
-    bbviewer.current = bbviewer.current.previous;
-
-    // Prefetch the new previous image
-    bbviewer.current.fetchPrevious();
-  
-    // Make sure a new state gets pushed for the image
-    bbviewer.current.pushstate = true;
-
-    // Trigger a UI update
-    updateUI();
-}
-
-// Load the next image
-function nextImage()
-{
-    // Fetch the next image
-    bbviewer.current.fetchNext();
-
-    // Make sure there is a next image
-    if (bbviewer.current.next === null) return;
-
-    // Switch to the next image
-    bbviewer.current = bbviewer.current.next;
-
-    // Prefetch the new next image
-    bbviewer.current.fetchNext();
-  
-    // Make sure a new state gets pushed for the image
-    bbviewer.current.pushstate = true;
-
-    // Trigger a UI update
-    updateUI();
-}
-
-// Load a random image
-function randomImage()
-{
-    // Fetch the random image
-    bbviewer.current.fetchRandom();
-
-    // Make sure there is a random image
-    if (bbviewer.current.random === null) return;
-
-    // Switch to the random image
-    bbviewer.current = bbviewer.current.random;
-
-    // Prefetch the new random image
-    bbviewer.current.fetchRandom();
-  
-    // Make sure a new state gets pushed for the image
-    bbviewer.current.pushstate = true;
-
-    // Trigger a UI update
-    updateUI();
 }
 
 // ==/Event Handlers==
